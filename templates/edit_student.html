@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Edit Student{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="bg-white p-4 rounded shadow-sm">
+
+    {% if not student %}
+      <p class="text-danger">{{ message or 'Student not found.' }}</p>
+      <a class="btn btn-outline-secondary" href="/students">Back to Students</a>
+    {% else %}
+      <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+        <div>
+          <h1 class="h4 mb-1">Edit Student</h1>
+          <div class="text-muted small">
+            {{ student['first_name'] }} {{ student['last_name'] }} (ID: {{ student['student_id'] }})<br>
+            Date joined: {{ student['enrollment_date'] }}
+          </div>
+        </div>
+        <div class="d-flex gap-2">
+          <a class="btn btn-sm btn-outline-secondary" href="/students/{{ student['student_id'] }}">Back to Summary</a>
+          <a class="btn btn-sm btn-outline-secondary" href="/students">Back to Students</a>
+        </div>
+      </div>
+
+      {% if message %}
+        <div class="alert alert-success">{{ message }}</div>
+      {% endif %}
+
+      <form method="post" novalidate>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">First name</label>
+            <input class="form-control {% if errors.first_name %}is-invalid{% endif %}"
+                   name="first_name" value="{{ student['first_name'] }}">
+            {% if errors.first_name %}<div class="invalid-feedback">{{ errors.first_name }}</div>{% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Last name</label>
+            <input class="form-control {% if errors.last_name %}is-invalid{% endif %}"
+                   name="last_name" value="{{ student['last_name'] }}">
+            {% if errors.last_name %}<div class="invalid-feedback">{{ errors.last_name }}</div>{% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Email (optional)</label>
+            <input class="form-control {% if errors.email %}is-invalid{% endif %}"
+                   name="email" value="{{ student['email'] or '' }}">
+            {% if errors.email %}<div class="invalid-feedback">{{ errors.email }}</div>{% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Phone (optional)</label>
+            <input class="form-control" name="phone" value="{{ student['phone'] or '' }}">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Date of birth</label>
+            <input class="form-control {% if errors.date_of_birth %}is-invalid{% endif %}"
+                   type="date" name="date_of_birth" value="{{ student['date_of_birth'] }}">
+            {% if errors.date_of_birth %}<div class="invalid-feedback">{{ errors.date_of_birth }}</div>{% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Status</label>
+            <select class="form-select" name="is_active">
+              <option value="1" {% if student['is_active'] == 1 %}selected{% endif %}>Active</option>
+              <option value="0" {% if student['is_active'] == 0 %}selected{% endif %}>Inactive</option>
+            </select>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Grade</label>
+            <select class="form-select {% if errors.grade_id %}is-invalid{% endif %}" name="grade_id" required>
+              <option value="">-- choose --</option>
+              {% for g in grades %}
+                <option value="{{ g['grade_id'] }}"
+                  {% if current_grade_id == g['grade_id'] %}selected{% endif %}>
+                  {{ g['grade_name'] }}
+                </option>
+              {% endfor %}
+            </select>
+            {% if errors.grade_id %}<div class="invalid-feedback">{{ errors.grade_id }}</div>{% endif %}
+          </div>
+
+        </div>
+
+        <div class="mt-4 d-flex gap-2">
+          <button class="btn btn-primary" type="submit">Save Changes</button>
+          <a class="btn btn-outline-secondary" href="/students/{{ student['student_id'] }}">Cancel</a>
+        </div>
+      </form>
+
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

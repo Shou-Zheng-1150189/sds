@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Student Summary{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="bg-white p-4 rounded shadow-sm">
+
+    {% if student %}
+      <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+        <div>
+          <h1 class="h4 mb-1">
+            {{ student['first_name'] }} {{ student['last_name'] }}
+          </h1>
+          <div class="text-muted small">Student ID: {{ student['student_id'] }}</div>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2">
+          <a class="btn btn-sm btn-primary" href="/students/{{ student['student_id'] }}/enrol">
+            Enrol into a class
+          </a>
+          <a class="btn btn-sm btn-outline-primary" href="/students/{{ student['student_id'] }}/edit">
+            Edit Student
+          </a>
+          <a class="btn btn-sm btn-outline-secondary" href="/students">
+            Back to Students
+          </a>
+        </div>
+      </div>
+
+      <h2 class="h5 mt-3">Classes</h2>
+
+      {% if classes and classes|length > 0 %}
+        <div class="table-responsive">
+          <table class="table table-sm table-striped align-middle">
+            <thead>
+              <tr>
+                <th>Dance Type</th>
+                <th>Grade</th>
+                <th>Class</th>
+                <th>Schedule</th>
+                <th>Teacher</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for c in classes %}
+              <tr>
+                <td>{{ c['dancetype_name'] }}</td>
+                <td>{{ c['grade_name'] }}</td>
+                <td>{{ c['class_name'] }}</td>
+                <td>{{ c['schedule_day'] }} {{ c['schedule_time'] }}</td>
+                <td>{{ c['teacher_first_name'] }} {{ c['teacher_last_name'] }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <p class="text-muted">This student is not enrolled in any classes yet.</p>
+      {% endif %}
+
+    {% else %}
+      <p class="text-danger">Student not found.</p>
+      <a class="btn btn-outline-secondary" href="/students">Back to Students</a>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

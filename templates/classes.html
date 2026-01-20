@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Classes{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h1 class="h4 mb-3">Classes</h1>
+
+  {% if classes and classes|length > 0 %}
+    {% for c in classes %}
+      <div class="card mb-3">
+        <div class="card-body">
+          <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+            <div>
+              <h2 class="h6 mb-1">
+                {{ c['dancetype_name'] }} - {{ c['grade_name'] }} - {{ c['class_name'] }}
+              </h2>
+              <div class="text-muted small">
+                {{ c['schedule_day'] }} {{ c['schedule_time'] }} |
+                Teacher: {{ c['teacher_first_name'] }} {{ c['teacher_last_name'] }}
+              </div>
+            </div>
+          </div>
+
+          <hr>
+
+          <div>
+            <div class="fw-semibold mb-2">Students</div>
+            {% set roster = students_by_class.get(c['class_id'], []) %}
+            {% if roster and roster|length > 0 %}
+              <ul class="mb-0">
+                {% for s in roster %}
+                  <li>
+                    <a href="/students/{{ s['student_id'] }}">
+                      {{ s['last_name'] }}, {{ s['first_name'] }}
+                    </a>
+                  </li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <div class="text-muted">No students enrolled.</div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p class="text-muted">No classes found.</p>
+  {% endif %}
+</div>
+{% endblock %}
