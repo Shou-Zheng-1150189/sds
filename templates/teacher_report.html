@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-
 {% block content %}
 <div class="container mt-4">
   <div class="d-flex justify-content-between align-items-center mb-3">
@@ -7,21 +6,45 @@
     <a class="btn btn-outline-secondary" href="{{ url_for('teachers') }}">Back to Teachers</a>
   </div>
 
-  <table class="table table-striped table-bordered">
-    <thead>
-      <tr>
-        <th>Teacher</th>
-        <th>Classes Taught</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for r in rows %}
-      <tr>
-        <td>{{ r['last_name'] }}, {{ r['first_name'] }}</td>
-        <td>{{ r['class_count'] }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+  <div class="table-responsive">
+    <table class="table table-sm table-striped align-middle">
+      <thead>
+        <tr>
+          <th>Teacher</th>
+          <th>Unique Students (Total)</th>
+          <th>Classes Taught (Students per class)</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% if teachers and teachers|length > 0 %}
+          {% for t in teachers %}
+          <tr>
+            <td>{{ t['last_name'] }}, {{ t['first_name'] }}</td>
+            <td>{{ t['unique_students'] }}</td>
+            <td>
+              {% set cls = classes_by_teacher.get(t['teacher_id'], []) %}
+              {% if cls and cls|length > 0 %}
+                <ul class="mb-0">
+                  {% for c in cls %}
+                    <li>
+                      {{ c['class_name'] }} — {{ c['students_in_class'] }}
+                    </li>
+                  {% endfor %}
+                </ul>
+              {% else %}
+                <span class="text-muted">No classes</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="3" class="text-muted">No teachers found.</td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
 </div>
 {% endblock %}

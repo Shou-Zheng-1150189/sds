@@ -32,6 +32,26 @@ def _is_valid_email(email: str) -> bool:
 # -----------------------
 # Routes
 # -----------------------
+
+@app.template_filter("nz_date")
+def nz_date(value, style="short"):
+    """
+    style="short" -> 22/10/2025
+    style="long"  -> 22 Oct 2025
+    """
+    if not value:
+        return ""
+
+    try:
+        # 数据库里通常是 YYYY-MM-DD
+        dt = datetime.strptime(value, "%Y-%m-%d")
+    except ValueError:
+        return value  # 防止意外格式直接报错
+
+    if style == "long":
+        return dt.strftime("%d %b %Y")   # 22 Oct 2025
+    return dt.strftime("%d/%m/%Y")       # 22/10/2025
+
 @app.route("/")
 def home():
     return render_template("home.html")
@@ -85,7 +105,7 @@ def students():
 def add_student():
     message = None
     errors = {}
-    today_iso = date.today().isoformat()
+    today = date.today().isoformat()
 
     # GET：显示空表单
     if request.method == "GET":
@@ -99,7 +119,7 @@ def add_student():
                 "email": "",
                 "phone": "",
                 "date_of_birth": "",
-                "enrollment_date": today_iso,
+                "enrollment_date": today,
             }
         )
 
@@ -110,7 +130,7 @@ def add_student():
     phone = request.form.get("phone", "").strip()
 
     date_of_birth = request.form.get("date_of_birth", "").strip()
-    enrollment_date = request.form.get("enrollment_date", "").strip() or today_iso
+    enrollment_date = request.form.get("enrollment_date", "").strip() or today
 
     # 你模板里是 status Active/Inactive，这里统一转成 is_active 1/0
     status = request.form.get("status", "Active").strip()
@@ -168,7 +188,7 @@ def add_student():
                 "email": "",
                 "phone": "",
                 "date_of_birth": "",
-                "enrollment_date": today_iso,
+                "enrollment_date": today,
             }
         )
 
@@ -182,7 +202,7 @@ def add_student():
         "enrollment_date": enrollment_date,
         "status": status,
     }
-    return render_template("add_student.html", message=None, errors=errors, form=form)
+    return render_template("add_student.html", message=None, errors=errors, form=form, today=today)
 
 
 @app.route("/classes")
@@ -464,24 +484,50 @@ def edit_student(student_id):
 
 @app.route("/report/teachers")
 def teacher_report():
-    conn = sqlite3.connect(connect.db)
-    conn.row_factory = sqlite3.Row
-    cur = conn.cursor()
+    cur = db.get_cursor()
+    try:
+        # b) 每位老师：唯一学生总数（去重）
+        teachers = cur.execute("""
+            SELECT
+                t.teacher_id,
+                t.first_name,
+                t.last_name,
+                COUNT(DISTINCT sc.student_id) AS unique_students
+            FROM teachers t
+            LEFT JOIN classes c ON c.teacher_id = t.teacher_id
+            LEFT JOIN studentclasses sc ON sc.class_id = c.class_id
+            GROUP BY t.teacher_id, t.first_name, t.last_name
+            ORDER BY t.last_name, t.first_name;
+        """).fetchall()
 
-    rows = cur.execute("""
-        SELECT
-            t.teacher_id,
-            t.first_name,
-            t.last_name,
-            COUNT(c.class_id) AS class_count
-        FROM teachers t
-        LEFT JOIN classes c ON c.teacher_id = t.teacher_id
-        GROUP BY t.teacher_id, t.first_name, t.last_name
-        ORDER BY t.last_name, t.first_name;
-    """).fetchall()
+        # a) 每位老师的每门课：学生人数
+        class_rows = cur.execute("""
+            SELECT
+                t.teacher_id,
+                c.class_id,
+                c.class_name,
+                c.schedule_day,
+                c.schedule_time,
+                COUNT(sc.student_id) AS students_in_class
+            FROM teachers t
+            JOIN classes c ON c.teacher_id = t.teacher_id
+            LEFT JOIN studentclasses sc ON sc.class_id = c.class_id
+            GROUP BY t.teacher_id, c.class_id, c.class_name, c.schedule_day, c.schedule_time
+            ORDER BY t.teacher_id, c.class_name;
+        """).fetchall()
+    finally:
+        cur.close()
 
-    conn.close()
-    return render_template("teacher_report.html", rows=rows)
+    # 按 teacher_id 分组，给模板用
+    classes_by_teacher = {}
+    for r in class_rows:
+        classes_by_teacher.setdefault(r["teacher_id"], []).append(r)
+
+    return render_template(
+        "teacher_report.html",
+        teachers=teachers,
+        classes_by_teacher=classes_by_teacher
+    )
 
 
 if __name__ == "__main__":

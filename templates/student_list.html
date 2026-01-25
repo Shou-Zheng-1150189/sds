@@ -50,8 +50,8 @@
             </td>
             <td>{{ s['email'] or '' }}</td>
             <td>{{ s['phone'] or '' }}</td>
-            <td>{{ s['date_of_birth'] or '' }}</td>
-            <td>{{ s['enrollment_date'] or '' }}</td>
+           <td>{{ s['date_of_birth'] }}</td>
+           <td>{{ s['enrollment_date'] }}</td>
             <td>
               {% if s['is_active'] == 1 %}
                 <span class="badge text-bg-success">Active</span>
