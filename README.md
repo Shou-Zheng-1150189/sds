@@ -7,7 +7,7 @@ Project Overview
 Selwyn Dance School (SDS) is implementing a web-based internal administration system.
 The system is intended solely for staff usage and allows them to manage students, classes, enrolments, and examine basic reports.
 
-The application is created with Python, Flask, MySQL, and Bootstrap, adhering to the limitations and recommended practices covered in COMP636.
+The application is created with Python, Flask, MySQL, SQLite (as provided for COMP636) and Bootstrap, adhering to the limitations and recommended practices covered in COMP636.
 
 Authorship Statement
 
@@ -27,6 +27,7 @@ Provide instructions for PythonAnywhere deployment and configuration.
 
 I thoroughly studied, tested, and understood all of the code.
 I can describe and justify the design and implementation decisions taken throughout this project.
+The image used on the homepage was generated using ChatGPT (OpenAI) for educational purposes only.
 
 Design Decisions
 
